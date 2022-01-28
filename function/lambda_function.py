@@ -16,4 +16,4 @@ def lambda_handler(event, context):
 
     else:
 
-        raise "Oh no!"
+        raise Exception
