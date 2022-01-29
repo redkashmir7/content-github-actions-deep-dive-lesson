@@ -14,12 +14,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
-        with:
+          with:
           python-version: 3.8
       - name: Install Library
         run: |
-            cd function
-            pip install flake8
+            cd funciton
+            pip instiall flake
       - name: Lint with flake8
         run: |
             flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -27,7 +27,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: linter
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -67,10 +67,31 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp ${{ github.sha }}.zip s3://my-buket-ajsdljafoij/${{ github.sha}}.zip
 
+  test:
+  runs-on: ubuntu-latest
+  needs: upload
+  steps: 
+    - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 
+    - name: Create test function
+      run: |
+          aws lambda create-function --function-name test-function \
+           --code S3Bucket=my-buket-ajsdljafoij,S3Key=${{ github.sha }}.zip \
+           --handler lambda_function.lambda_handler --runtime python3.8 \
+           --role arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambda-function
+    - name: Wait for 30 seconds
+      run: sleep 30
+    - name: Destroy test function
+      if: ${{ always() }}
+      run: aws lambda delete-function --function-name test-function
 
   deploy:
     runs-on: ubuntu-latest
-    needs: upload
+    needs: test
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
