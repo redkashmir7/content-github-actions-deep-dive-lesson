@@ -3,7 +3,6 @@ on: [push]
 
 jobs:
 
-
   lint:
     runs-on: ubuntu-latest
     steps: 
@@ -60,30 +59,24 @@ jobs:
           release_name: Release ${{ github.run_number }}
           body: New release for ${{ github.sha }}. Release notes can be found in the docs.
           draft: false
-          prerelease: false
+          prerelease: false         
           
-          
-   documentation:
-     runs-no: ubuntu-latest
-     needs: lint
-     steps:
-      - name: checkout code
-        uses: actions/checkout@v2
-      - name: create docs folder
-        runs: mkdir docs
-      - name: convert md to html
-        uses: docker://pandoc/core:2.9
-        with:
-          args: userguid.md -t html -o docs/index.html
-      - name: deploy site
-        uses: JamesIves/github-pages-deploy-action@4.1.4
-        with:
-          folder: docs
-          branch: gh-pages
+  documentation:
+    runs-no: ubuntu-latest
+    needs: lint
+    steps:
+     - name: checkout code
+       uses: actions/checkout@v2
+     - name: create docs folder
+       runs: mkdir docs
+     - name: convert md to html
+       uses: docker://pandoc/core:2.9
+       with:
+        args: userguid.md -t html -o docs/index.html
+     - name: deploy site
+       uses: JamesIves/github-pages-deploy-action@4.1.4
+       with:
+        folder: docs
+        branch: gh-pages
         
-      
-
-
-
-
-
+  
